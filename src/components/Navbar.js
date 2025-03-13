@@ -7,7 +7,7 @@ const MyNavbar = () => {
       <Container>
         {/* Updated Navbar Brand with Logo */}
         <Navbar.Brand as={Link} to="/">
-          <img src="/logo.jpg" alt="StealthScan Logo" style={{ height: "50px", marginRight: "10px" }} />
+          <img src="/logo.png" alt="StealthScan Logo" style={{ height: "50px", marginRight: "10px" }} />
           <strong>StealthScan</strong>
         </Navbar.Brand>
         

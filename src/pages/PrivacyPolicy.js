@@ -54,7 +54,7 @@ const PrivacyPolicy = () => {
       </ul>
 
       <h4>7. Contact Information</h4>
-      <p>If you have any questions about this Privacy Policy, please contact us at <strong>sample@emali.com</strong>.</p>
+      <p>If you have any questions about this Privacy Policy, please contact us at <strong>stealthscan@gmail.com</strong>.</p>
 
       <p><strong>By using our service, you agree to the terms of this Privacy Policy.</strong></p>
     </Container>
