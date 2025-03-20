@@ -15,10 +15,10 @@ const Footer = () => {
           <Link to="/contact-us">Contact Us</Link>
         </p>
         <div className="mt-2">
-          <a href="#"><FaTwitter size={24} /></a>
+          <a href="https://x.com/StealthScan_"><FaTwitter size={24} /></a>
           <a href="#"><FaFacebookF size={24} /></a>
-          <a href="#"><FaLinkedinIn size={24} /></a>
-          <a href="#"><FaYoutube size={24} /></a>
+          <a href="https://www.linkedin.com/in/stealth-scan-436212357/"><FaLinkedinIn size={24} /></a>
+          <a href="https://www.youtube.com/channel/UCI3j8NngdTHdjBDxJwcZqtg"><FaYoutube size={24} /></a>
         </div>
       </Container>
     </div>

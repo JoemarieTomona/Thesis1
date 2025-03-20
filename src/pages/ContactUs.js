@@ -8,8 +8,8 @@ const ContactUs = () => {
       <p><strong>Company Headquarters:</strong></p>
       <p><strong>StealthScan Technologies</strong></p>
       <p>Brgy. Mamatid, City of Cabuyao, Laguna</p>
-      <p>Phone: +63 912 345 6789</p>
-      <p>Email: <a href="mailto:support@stealthscan.com">support@stealthscan.com</a></p>
+      <p>Phone: +63 915 019 4457</p>
+      <p>Email: <a href="mailto:support@stealthscan.com">stealthscan3@gmail.com</a></p>
 
       {/* Google Map Embed */}
       <div className="map-container mb-4">
