@@ -16,7 +16,7 @@ const Footer = () => {
         </p>
         <div className="mt-2">
           <a href="https://x.com/StealthScan_"><FaTwitter size={24} /></a>
-          <a href="#"><FaFacebookF size={24} /></a>
+          <a href="https://www.facebook.com/profile.php?id=61574758528131"><FaFacebookF size={24} /></a>
           <a href="https://www.linkedin.com/in/stealth-scan-436212357/"><FaLinkedinIn size={24} /></a>
           <a href="https://www.youtube.com/channel/UCI3j8NngdTHdjBDxJwcZqtg"><FaYoutube size={24} /></a>
         </div>

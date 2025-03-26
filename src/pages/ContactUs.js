@@ -1,7 +1,69 @@
-import React from "react";
-import { Container, Form, Button } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Container, Form, Button, Alert } from "react-bootstrap";
+import emailjs from "@emailjs/browser";
 
 const ContactUs = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    let newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = "Name is required.";
+    if (!formData.email.trim()) newErrors.email = "Email is required.";
+    else if (!validateEmail(formData.email)) newErrors.email = "Invalid email format.";
+    if (!formData.subject.trim()) newErrors.subject = "Subject is required.";
+    if (!formData.message.trim()) newErrors.message = "Message cannot be empty.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    emailjs
+      .send(
+        "service_8jv08cs", // Replace with your EmailJS Service ID
+        "template_k4ib35q", // Replace with your EmailJS Template ID
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        },
+        "4mHZzydiaR15YNsUy" // Replace with your EmailJS Public Key
+      )
+      .then(
+        () => {
+          setSuccessMessage("Your message has been sent successfully!");
+          setFormData({ name: "", email: "", subject: "", message: "" });
+          setErrors({});
+        },
+        (error) => {
+          console.error("Failed to send email:", error);
+        }
+      );
+  };
+
   return (
     <Container className="mt-4">
       <h2>Contact Us</h2>
@@ -11,7 +73,7 @@ const ContactUs = () => {
       <p>Phone: +63 915 019 4457</p>
       <p>Email: <a href="mailto:support@stealthscan.com">stealthscan3@gmail.com</a></p>
 
-      {/* Google Map Embed */}
+      {/* Google Map Embed (Retained) */}
       <div className="map-container mb-4">
         <iframe
           title="company-location"
@@ -24,27 +86,61 @@ const ContactUs = () => {
         ></iframe>
       </div>
 
-      {/* Contact Form */}
       <h4>Send Us a Message</h4>
-      <Form>
+      {successMessage && <Alert variant="success">{successMessage}</Alert>}
+
+      <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
           <Form.Label>Name</Form.Label>
-          <Form.Control type="text" placeholder="Enter your name" required />
+          <Form.Control
+            type="text"
+            name="name"
+            placeholder="Enter your name"
+            value={formData.name}
+            onChange={handleChange}
+            isInvalid={!!errors.name}
+          />
+          <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group className="mb-3">
           <Form.Label>Email address</Form.Label>
-          <Form.Control type="email" placeholder="Enter your email" required />
+          <Form.Control
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleChange}
+            isInvalid={!!errors.email}
+          />
+          <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group className="mb-3">
           <Form.Label>Message Subject</Form.Label>
-          <Form.Control type="text" placeholder="Enter subject" required />
+          <Form.Control
+            type="text"
+            name="subject"
+            placeholder="Enter subject"
+            value={formData.subject}
+            onChange={handleChange}
+            isInvalid={!!errors.subject}
+          />
+          <Form.Control.Feedback type="invalid">{errors.subject}</Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group className="mb-3">
           <Form.Label>Message</Form.Label>
-          <Form.Control as="textarea" rows={4} placeholder="Enter your message" required />
+          <Form.Control
+            as="textarea"
+            rows={4}
+            name="message"
+            placeholder="Enter your message"
+            value={formData.message}
+            onChange={handleChange}
+            isInvalid={!!errors.message}
+          />
+          <Form.Control.Feedback type="invalid">{errors.message}</Form.Control.Feedback>
         </Form.Group>
 
         <Button variant="primary" type="submit">

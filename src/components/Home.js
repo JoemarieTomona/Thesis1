@@ -1,27 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { Container, Button, Form } from "react-bootstrap";
+import React, { useState, useEffect, useRef } from "react";
+import { Container, Button, Form, Modal, ProgressBar, Table } from "react-bootstrap";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Home = () => {
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanResult, setScanResult] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     let interval = setInterval(() => {
-      setProgress((oldProgress) => {
-        if (oldProgress >= 100) {
+      setProgress((prev) => {
+        if (prev >= 100) {
           clearInterval(interval);
           setTimeout(() => setLoading(false), 500);
           return 100;
         }
-        return oldProgress + 5;
+        return prev + 5;
       });
     }, 100);
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleFileRemove = () => {
+    setSelectedFile(null);
+    setScanResult(null);
+    setError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -32,6 +44,7 @@ const Home = () => {
       } else {
         setError("");
         setSelectedFile(file);
+        setScanResult(null);
       }
     }
   };
@@ -41,7 +54,41 @@ const Home = () => {
       alert("Please select a valid file (Max: 5MB) to scan.");
       return;
     }
-    alert(`Scanning ${selectedFile.name} for malware...`);
+
+    setShowModal(true);
+    setScanProgress(0);
+    let progress = 0;
+
+    const interval = setInterval(() => {
+      progress += 20;
+      setScanProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+
+        setTimeout(() => {
+          const fileType = selectedFile.name.split(".").pop().toUpperCase();
+          const fileSize = (selectedFile.size / 1024).toFixed(2) + " KB";
+          const timestamp = new Date().toLocaleString();
+          const encryptionType = fileType === "ENC" ? "AES-256" : "Unknown";
+          let threatLevel = "Low";
+          let malwareFound = "No threats detected. File is safe.";
+
+          if (selectedFile.name.toLowerCase().includes("infected")) {
+            threatLevel = "High";
+            malwareFound = "Malware detected: Simulated Trojan XYZ";
+          }
+
+          setScanResult({
+            fileName: selectedFile.name,
+            fileSize,
+            encryptionType,
+            scanTime: timestamp,
+            threatLevel,
+            malwareFound,
+          });
+        }, 500);
+      }
+    }, 500);
   };
 
   if (loading) {
@@ -57,25 +104,42 @@ const Home = () => {
 
   return (
     <Container className="p-4 mt-5 rounded shadow bg-white">
-      <h2 className="text-center text-primary">🔍 StealthScan - Secure File Scanner</h2>
-      <p className="text-muted text-center">
-        Scan encrypted files without decryption.
-      </p>
+      <h2 className="text-center text-primary">StealthScan - Secure File Scanner</h2>
+      <p className="text-muted text-center">Scan encrypted files without decryption.</p>
 
       <Form className="my-3 text-center">
-        <Form.Group controlId="fileUpload" className="mb-3">
-          <Form.Control type="file" onChange={handleFileChange} className="w-50 mx-auto" />
+        <Form.Group controlId="fileUpload" className="mb-3 position-relative">
+          <div style={{ position: "relative", display: "inline-block", width: "50%" }}>
+            <Form.Control type="file" onChange={handleFileChange} className="w-100" ref={fileInputRef} />
+            {selectedFile && (
+              <span
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "red",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "24px",
+                }}
+                onClick={handleFileRemove}
+              >
+                ×
+              </span>
+            )}
+          </div>
         </Form.Group>
 
-        {/* Maximum File Size Message */}
         <p style={{ fontWeight: "bold", marginBottom: "10px", color: "#6c757d" }}>
           (Maximum file upload size: 5MB)
         </p>
 
-        {/* Error Message if File is Too Large */}
         {error && <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>}
 
-        <Button id="scanButton" variant="primary" onClick={handleScan}>Scan for Malware</Button>
+        <Button id="scanButton" variant="primary" onClick={handleScan}>
+          Scan for Malware
+        </Button>
 
         <p style={{ marginTop: "25px", textAlign: "center", maxWidth: "1000px", margin: "auto" }}>
           This tool uses <strong>homomorphic encryption</strong> and
@@ -83,6 +147,53 @@ const Home = () => {
           without decrypting files.
         </p>
       </Form>
+
+      <Modal show={showModal} centered backdrop="static">
+        <Modal.Body className="text-center">
+          <h4>
+            <i className="bi bi-search"></i> Scanning in Progress...
+          </h4>
+          <ProgressBar animated now={scanProgress} label={`${scanProgress}%`} className="my-3" />
+
+          {scanProgress === 100 && scanResult && (
+            <Table striped bordered hover className="mt-3">
+              <tbody>
+                <tr>
+                  <td><i className="bi bi-file-earmark"></i> File Name</td>
+                  <td>{scanResult.fileName}</td>
+                </tr>
+                <tr>
+                  <td><i className="bi bi-folder"></i> File Size</td>
+                  <td>{scanResult.fileSize}</td>
+                </tr>
+                <tr>
+                  <td><i className="bi bi-lock"></i> Encryption Type</td>
+                  <td>{scanResult.encryptionType}</td>
+                </tr>
+                <tr>
+                  <td><i className="bi bi-clock"></i> Scan Time</td>
+                  <td>{scanResult.scanTime}</td>
+                </tr>
+                <tr>
+                  <td><i className="bi bi-exclamation-triangle"></i> Threat Level</td>
+                  <td style={{ color: scanResult.threatLevel === "High" ? "red" : "green" }}>
+                    {scanResult.threatLevel}
+                  </td>
+                </tr>
+                <tr>
+                  <td><i className="bi bi-shield-lock"></i> Scan Result</td>
+                  <td style={{ color: scanResult.threatLevel === "High" ? "red" : "green" }}>
+                    {scanResult.malwareFound}
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
