@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Container, Button, Form, Modal, ProgressBar, Table } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import DraggableModalDialog from "./DraggableModalDialog";
 
 const Home = () => {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -11,6 +12,8 @@ const Home = () => {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanResult, setScanResult] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [malwareDetected, setMalwareDetected] = useState(false);
+  const [filePath, setFilePath] = useState("");
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -76,6 +79,8 @@ const Home = () => {
           if (selectedFile.name.toLowerCase().includes("infected")) {
             threatLevel = "High";
             malwareFound = "Malware detected: Simulated Trojan XYZ";
+            setMalwareDetected(true);
+            setFilePath(`C:\\Users\\John\\Downloads\\${selectedFile.name}`);
           }
 
           setScanResult({
@@ -148,6 +153,7 @@ const Home = () => {
         </p>
       </Form>
 
+      {/* Scan Result Modal */}
       <Modal show={showModal} centered backdrop="static">
         <Modal.Body className="text-center">
           <h4>
@@ -194,6 +200,28 @@ const Home = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Malware Warning Modal */}
+      <Modal
+  show={malwareDetected}
+  onHide={() => setMalwareDetected(false)}
+  centered
+  dialogAs={DraggableModalDialog}
+>
+  <Modal.Header closeButton className="cursor-grab">
+    <Modal.Title>⚠️ Malware Detected</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <p>This file was detected as malware. Please delete it manually from your computer.</p>
+    {filePath && (
+      <p><strong>File Path:</strong> <code>{filePath}</code></p>
+    )}
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="danger" onClick={() => setMalwareDetected(false)}>Close</Button>
+  </Modal.Footer>
+</Modal>
+
     </Container>
   );
 };

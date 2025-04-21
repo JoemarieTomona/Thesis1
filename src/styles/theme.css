@@ -90,5 +90,8 @@ body {
     display: block;
   }
 
+  .cursor-grab {
+    cursor: grab;
+  }
   
   
