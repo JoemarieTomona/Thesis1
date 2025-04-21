@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Modal, Button } from "react-bootstrap";
 
 const ConsentModal = ({ onAccept, onDecline }) => {
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
+  const contentRef = useRef(null);
 
   useEffect(() => {
-    const content = document.getElementById("consentContent");
-    if (content) {
-      const handleScroll = () => {
-        if (content.scrollTop + content.clientHeight >= content.scrollHeight) {
-          setScrolledToBottom(true);
-        }
-      };
-      content.addEventListener("scroll", handleScroll);
-      return () => content.removeEventListener("scroll", handleScroll);
-    }
+    const content = contentRef.current;
+    if (!content) return;
+
+    const handleScroll = () => {
+      const isBottom = content.scrollTop + content.clientHeight >= content.scrollHeight - 5;
+      setScrolledToBottom(isBottom);
+    };
+
+    content.addEventListener("scroll", handleScroll);
+    return () => content.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -24,7 +25,7 @@ const ConsentModal = ({ onAccept, onDecline }) => {
       </Modal.Header>
       <Modal.Body>
         <div
-          id="consentContent"
+          ref={contentRef}
           style={{
             maxHeight: "300px",
             overflowY: "auto",
@@ -44,9 +45,7 @@ const ConsentModal = ({ onAccept, onDecline }) => {
           </p>
 
           <h5>Terms of Use</h5>
-          <p>
-            By using StealthScan, you agree to these terms:
-          </p>
+          <p>By using StealthScan, you agree to these terms:</p>
           <ul>
             <li>We provide cybersecurity information for educational purposes.</li>
             <li>We are not responsible for any damages resulting from the use of this website.</li>
