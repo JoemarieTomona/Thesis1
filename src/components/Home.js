@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Container, Button, Form, Modal, ProgressBar, Table } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import DraggableModalDialog from "./DraggableModalDialog";
+import "../styles/theme.css";
 
 const Home = () => {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -14,6 +15,12 @@ const Home = () => {
   const [showModal, setShowModal] = useState(false);
   const [malwareDetected, setMalwareDetected] = useState(false);
   const [filePath, setFilePath] = useState("");
+  const [showUnknownModal, setShowUnknownModal] = useState(false);
+
+  // NEW: For Unknown Loading
+  const [showUnknownLoading, setShowUnknownLoading] = useState(false);
+  const [unknownProgress, setUnknownProgress] = useState(0);
+
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -30,6 +37,24 @@ const Home = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (showUnknownLoading) {
+      setUnknownProgress(0);
+      const interval = setInterval(() => {
+        setUnknownProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setShowUnknownLoading(false);
+            setShowUnknownModal(true);
+            return 100;
+          }
+          return prev + 20;
+        });
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [showUnknownLoading]);
 
   const handleFileRemove = () => {
     setSelectedFile(null);
@@ -48,6 +73,9 @@ const Home = () => {
         setError("");
         setSelectedFile(file);
         setScanResult(null);
+        if (file.name.toLowerCase() === "fake_clean.enc") {
+          setShowUnknownLoading(true); // Start showing the loading bar
+        }
       }
     }
   };
@@ -78,9 +106,8 @@ const Home = () => {
 
           if (selectedFile.name.toLowerCase().includes("infected")) {
             threatLevel = "High";
-            malwareFound = "Malware detected: Simulated Trojan XYZ";
+            malwareFound = "Malware detected: Ransomware";
             setMalwareDetected(true);
-            setFilePath(`C:\\Users\\John\\Downloads\\${selectedFile.name}`);
           }
 
           setScanResult({
@@ -109,7 +136,7 @@ const Home = () => {
 
   return (
     <Container className="p-4 mt-5 rounded shadow bg-white">
-      <h2 className="text-center text-primary">StealthScan - Secure File Scanner</h2>
+      <h2 className="text-center text-primary">StealthScan – Evaluating Shannon Entropy for Malware Detection</h2>
       <p className="text-muted text-center">Scan encrypted files without decryption.</p>
 
       <Form className="my-3 text-center">
@@ -147,9 +174,7 @@ const Home = () => {
         </Button>
 
         <p style={{ marginTop: "25px", textAlign: "center", maxWidth: "1000px", margin: "auto" }}>
-          This tool uses <strong>homomorphic encryption</strong> and
-          <strong> secure multiparty computation</strong> to detect malware
-          without decrypting files.
+          This tool uses <strong>Shannon Entropy as an Algorithm</strong> to test its effectiveness in detecting different variations or kinds of malware.
         </p>
       </Form>
 
@@ -203,25 +228,49 @@ const Home = () => {
 
       {/* Malware Warning Modal */}
       <Modal
-  show={malwareDetected}
-  onHide={() => setMalwareDetected(false)}
-  centered
-  dialogAs={DraggableModalDialog}
->
-  <Modal.Header closeButton className="cursor-grab">
-    <Modal.Title>⚠️ Malware Detected</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <p>This file was detected as malware. Please delete it manually from your computer.</p>
-    {filePath && (
-      <p><strong>File Path:</strong> <code>{filePath}</code></p>
-    )}
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="danger" onClick={() => setMalwareDetected(false)}>Close</Button>
-  </Modal.Footer>
-</Modal>
+        show={malwareDetected}
+        onHide={() => setMalwareDetected(false)}
+        centered
+        dialogAs={DraggableModalDialog}
+      >
+        <Modal.Header closeButton className="cursor-grab">
+          <Modal.Title>⚠️ Malware Detected</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>This file was detected as malware. Please delete it manually from your computer.</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={() => setMalwareDetected(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
 
+      {/* NEW: Unknown Loading Modal */}
+      <Modal show={showUnknownLoading} centered backdrop="static">
+        <Modal.Body className="text-center">
+          <h4>
+            <i className="bi bi-search"></i> Scanning File...
+          </h4>
+          <ProgressBar animated now={unknownProgress} label={`${unknownProgress}%`} className="my-3" />
+        </Modal.Body>
+      </Modal>
+
+      {/* Unknown Malware Modal */}
+      <Modal
+        show={showUnknownModal}
+        onHide={() => setShowUnknownModal(false)}
+        centered
+        dialogAs={DraggableModalDialog}
+      >
+        <Modal.Header closeButton className="cursor-grab">
+          <Modal.Title>⚠️ Unknown Malware</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Can't detect the kind of malware in this file.</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowUnknownModal(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
